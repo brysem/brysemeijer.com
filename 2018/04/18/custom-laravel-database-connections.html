@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Bryse Meijer - Custom Laravel Database Connections</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://assets.brysemeijer.com/css/styles/monokai_sublime.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.min.css">
+</head>
+
+<body>
+  <div class="bg-primary w-full py-1"></div>
+
+<nav class="bg-gray">
+  <div class="container flex items-center justify-between flex-wrap py-6">
+    <div class="flex items-center flex-shrink-0 text-white mr-6">
+      <a href="/">
+        <img src="/assets/logo-small.png" class="fill-current h-8 w-8 mr-2" alt="BJM Logo">
+      </a>
+      <a href="/">
+        <span class="font-semibold text-xl tracking-tight">Bryse Meijer</span>
+      </a>
+    </div>
+    <div class="block lg:hidden">
+      <button class="flex items-center px-3 py-2 border rounded text-teal-200 border-teal-400 hover:text-white hover:border-white">
+        <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Menu</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
+      </button>
+    </div>
+    <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
+      <div class="text-sm lg:flex-grow">
+        <a href="/blog" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-gray-100 mr-4">
+          Blog
+        </a>
+        <a href="/projects" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-gray-100 mr-4">
+          Projects
+        </a>
+        <a href="/contact" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-gray-100">
+          Contact
+        </a>
+      </div>
+      <div>
+
+      </div>
+    </div>
+  </div>
+</nav>
+
+  <div class="block w-full bg-cover bg-center flex flex-wrap content-center h-64 border-primary border-t-2 bg-gray" style="background-image: url(https://cdn.lynda.com/course/383047/383047-636876408801594981-16x9.jpg)">
+    <h1 class="container text-4xl text-white text-shadow text-center">
+        Custom Laravel Database Connections
+    </h1>
+</div>
+
+<div class="container post-body pt-8">
+    <p>While working with the amazing package <a href="https://github.com/hyn/multi-tenant">Tenancy</a> which provides multi-tenancy support to Laravel, I ran into a problem with using Laravel Passport. The package works by setting up an individual database for each tenant that your application has. It makes this possible by overwriting the <code class="highlighter-rouge">$connection</code> property of Eloquent models.</p>
+
+<p>Unfortunately, this task can prove to be difficult for third-party packages where you cannot extend the Eloquent models. This is very much the case for Laravel Passport.</p>
+
+<p>Luckily, we have access to the <a href="https://github.com/laravel/passport/blob/5.0/src/TokenRepository.php">TokenRepository</a> class used by Laravel. An instance of this repository is bound to Laravel’s <a href="https://laravel.com/docs/5.6/container">IOC</a>. This means that we have the freedom to overwrite this repository using Laravel’s <code class="highlighter-rouge">bind</code> method on the container.</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$this</span><span class="o">-&gt;</span><span class="na">app</span><span class="o">-&gt;</span><span class="na">bind</span><span class="p">(</span><span class="nx">\Laravel\Passport\TokenRepository</span><span class="o">::</span><span class="na">class</span><span class="p">,</span> <span class="nx">\App\Support\Oauth\TokenRepository</span><span class="o">::</span><span class="na">class</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>We are now free to overwrite any methods in the TokenRepository, including changing the database connection for the application and thus for Laravel Passport.</p>
+
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cp">&lt;?php</span>
+
+<span class="k">namespace</span> <span class="nx">App\Support\Oauth</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">Illuminate\Contracts\Foundation\Application</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">Laravel\Passport\TokenRepository</span> <span class="k">as</span> <span class="nx">BaseTokenRepository</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">TokenRepository</span> <span class="k">extends</span> <span class="nx">BaseTokenRepository</span>
+<span class="p">{</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">__construct</span><span class="p">(</span><span class="nx">Application</span> <span class="nv">$app</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="nv">$app</span><span class="p">[</span><span class="s1">'config'</span><span class="p">]</span><span class="o">-&gt;</span><span class="na">set</span><span class="p">(</span><span class="s1">'database.default'</span><span class="p">,</span> <span class="nv">$app</span><span class="p">[</span><span class="s1">'config'</span><span class="p">]</span><span class="o">-&gt;</span><span class="na">get</span><span class="p">(</span><span class="s1">'tenancy.db.tenant-connection-name'</span><span class="p">));</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>In theory, the database connection should only be changed for Laravel Passport when calling any of its controllers that use this <code class="highlighter-rouge">TokenRepository</code>, making it an ideal place to hook into. Any direct access of the Eloquent models in Laravel passport may always be extended when needed for your own purposes.</p>
+
+<p>Overiding the connection for any third-party Eloquent models is also possible by using an observer and hooking into the events that models emit.
+You see an example at <a href="https://github.com/hyn/multi-tenant/commit/cc08069c639af9db686412f576163f268a4a8202">cc08069c639af9db686412f576163f268a4a8202</a>.</p>
+
+</div>
+
+<div class="container pt-8">
+    <div id="disqus_thread"></div>
+    <script>
+
+    /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = 'https://brysemeijer.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+
+  <div class="container mb-8">&nbsp;</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/latest.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script type="text/javascript" async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML-full&amp;latest"></script>
+  <script src="https://assets.brysemeijer.com/js/highlight.pack.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/js/all.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>

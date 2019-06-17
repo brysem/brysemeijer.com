@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Bryse Meijer - Laravel: Detect Language & Set Locale</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://assets.brysemeijer.com/css/styles/monokai_sublime.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.min.css">
+</head>
+
+<body>
+  <div class="bg-primary w-full py-1"></div>
+
+<nav class="bg-gray">
+  <div class="container flex items-center justify-between flex-wrap py-6">
+    <div class="flex items-center flex-shrink-0 text-white mr-6">
+      <a href="/">
+        <img src="/assets/logo-small.png" class="fill-current h-8 w-8 mr-2" alt="BJM Logo">
+      </a>
+      <a href="/">
+        <span class="font-semibold text-xl tracking-tight">Bryse Meijer</span>
+      </a>
+    </div>
+    <div class="block lg:hidden">
+      <button class="flex items-center px-3 py-2 border rounded text-teal-200 border-teal-400 hover:text-white hover:border-white">
+        <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Menu</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
+      </button>
+    </div>
+    <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
+      <div class="text-sm lg:flex-grow">
+        <a href="/blog" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-gray-100 mr-4">
+          Blog
+        </a>
+        <a href="/projects" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-gray-100 mr-4">
+          Projects
+        </a>
+        <a href="/contact" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-gray-100">
+          Contact
+        </a>
+      </div>
+      <div>
+
+      </div>
+    </div>
+  </div>
+</nav>
+
+  <div class="block w-full bg-cover bg-center flex flex-wrap content-center h-64 border-primary border-t-2 bg-gray" style="background-image: url(https://media.timeout.com/images/103966507/image.jpg)">
+    <h1 class="container text-4xl text-white text-shadow text-center">
+        Laravel: Detect Language & Set Locale
+    </h1>
+</div>
+
+<div class="container post-body pt-8">
+    <p>Do you want to detect the language of the user visiting your website? This is a really useful function for automatically  setting the locale of your Laravel application.</p>
+
+<p>Add the following to your base controller’s <code class="highlighter-rouge">public function __construct()</code>. This will make sure that it loads for every page. However, please be aware that if you overwrite the <code class="highlighter-rouge">__construct()</code> in your own controllers that you will have to refer to the base controller’s function by using <code class="highlighter-rouge">parent::__construct()</code>.</p>
+
+<p><em>App\Http\Controllers\Controller</em></p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>public function __construct()
+{
+    if(Session::has('locale'))
+    {
+        Config::set('app.locale', Session::get('locale', 'en'));
+    }
+    else
+    {
+        Config::set('app.locale', getBrowserLocale());
+    }
+}
+</code></pre></div></div>
+
+<p>You will need to add a helper function to get the user’s locale.
+Please note that you can add the locales that your website accepts in the array <code class="highlighter-rouge">$websiteLanguages</code></p>
+
+<p><em>helpers.php</em></p>
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">function</span> <span class="nf">getBrowserLocale</span><span class="p">()</span>
+<span class="p">{</span>
+    <span class="c1">// Credit: https://gist.github.com/Xeoncross/dc2ebf017676ae946082</span>
+    <span class="nv">$websiteLanguages</span> <span class="o">=</span> <span class="p">[</span><span class="s1">'EN'</span><span class="p">,</span> <span class="s1">'JA'</span><span class="p">,</span> <span class="s1">'NL'</span><span class="p">];</span>
+    <span class="c1">// Parse the Accept-Language according to:</span>
+    <span class="c1">// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.4</span>
+    <span class="nb">preg_match_all</span><span class="p">(</span>
+       <span class="s1">'/([a-z]{1,8})'</span> <span class="o">.</span>       <span class="c1">// M1 - First part of language e.g en</span>
+       <span class="s1">'(-[a-z]{1,8})*\s*'</span> <span class="o">.</span>   <span class="c1">// M2 -other parts of language e.g -us</span>
+       <span class="c1">// Optional quality factor M3 ;q=, M4 - Quality Factor</span>
+       <span class="s1">'(;\s*q\s*=\s*((1(\.0{0,3}))|(0(\.[0-9]{0,3}))))?/i'</span><span class="p">,</span>
+       <span class="nv">$_SERVER</span><span class="p">[</span><span class="s1">'HTTP_ACCEPT_LANGUAGE'</span><span class="p">],</span>
+       <span class="nv">$langParse</span><span class="p">);</span>
+
+    <span class="nv">$langs</span> <span class="o">=</span> <span class="nv">$langParse</span><span class="p">[</span><span class="mi">1</span><span class="p">];</span> <span class="c1">// M1 - First part of language</span>
+    <span class="nv">$quals</span> <span class="o">=</span> <span class="nv">$langParse</span><span class="p">[</span><span class="mi">4</span><span class="p">];</span> <span class="c1">// M4 - Quality Factor</span>
+
+    <span class="nv">$numLanguages</span> <span class="o">=</span> <span class="nb">count</span><span class="p">(</span><span class="nv">$langs</span><span class="p">);</span>
+    <span class="nv">$langArr</span> <span class="o">=</span> <span class="k">array</span><span class="p">();</span>
+
+    <span class="k">for</span> <span class="p">(</span><span class="nv">$num</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="nv">$num</span> <span class="o">&lt;</span> <span class="nv">$numLanguages</span><span class="p">;</span> <span class="nv">$num</span><span class="o">++</span><span class="p">)</span>
+    <span class="p">{</span>
+       <span class="nv">$newLang</span> <span class="o">=</span> <span class="nb">strtoupper</span><span class="p">(</span><span class="nv">$langs</span><span class="p">[</span><span class="nv">$num</span><span class="p">]);</span>
+       <span class="nv">$newQual</span> <span class="o">=</span> <span class="nb">isset</span><span class="p">(</span><span class="nv">$quals</span><span class="p">[</span><span class="nv">$num</span><span class="p">])</span> <span class="o">?</span>
+          <span class="p">(</span><span class="k">empty</span><span class="p">(</span><span class="nv">$quals</span><span class="p">[</span><span class="nv">$num</span><span class="p">])</span> <span class="o">?</span> <span class="mf">1.0</span> <span class="o">:</span> <span class="nb">floatval</span><span class="p">(</span><span class="nv">$quals</span><span class="p">[</span><span class="nv">$num</span><span class="p">]))</span> <span class="o">:</span> <span class="mf">0.0</span><span class="p">;</span>
+
+       <span class="c1">// Choose whether to upgrade or set the quality factor for the</span>
+       <span class="c1">// primary language.</span>
+       <span class="nv">$langArr</span><span class="p">[</span><span class="nv">$newLang</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="nb">isset</span><span class="p">(</span><span class="nv">$langArr</span><span class="p">[</span><span class="nv">$newLang</span><span class="p">]))</span> <span class="o">?</span>
+          <span class="nb">max</span><span class="p">(</span><span class="nv">$langArr</span><span class="p">[</span><span class="nv">$newLang</span><span class="p">],</span> <span class="nv">$newQual</span><span class="p">)</span> <span class="o">:</span> <span class="nv">$newQual</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="c1">// sort list based on value</span>
+    <span class="c1">// langArr will now be an array like: array('EN' =&gt; 1, 'ES' =&gt; 0.5)</span>
+    <span class="nb">arsort</span><span class="p">(</span><span class="nv">$langArr</span><span class="p">,</span> <span class="nx">SORT_NUMERIC</span><span class="p">);</span>
+
+    <span class="c1">// The languages the client accepts in order of preference.</span>
+    <span class="nv">$acceptedLanguages</span> <span class="o">=</span> <span class="nb">array_keys</span><span class="p">(</span><span class="nv">$langArr</span><span class="p">);</span>
+
+    <span class="c1">// Set the most preferred language that we have a translation for.</span>
+    <span class="k">foreach</span> <span class="p">(</span><span class="nv">$acceptedLanguages</span> <span class="k">as</span> <span class="nv">$preferredLanguage</span><span class="p">)</span>
+    <span class="p">{</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">in_array</span><span class="p">(</span><span class="nv">$preferredLanguage</span><span class="p">,</span> <span class="nv">$websiteLanguages</span><span class="p">))</span>
+        <span class="p">{</span>
+           <span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">'lang'</span><span class="p">]</span> <span class="o">=</span> <span class="nv">$preferredLanguage</span><span class="p">;</span>
+           <span class="k">return</span> <span class="nb">strtolower</span><span class="p">(</span><span class="nv">$preferredLanguage</span><span class="p">);</span>
+        <span class="p">}</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>You can create a controller to manage the switching of languages.</p>
+
+<p><em>App\Http\Controllers\Controller\LocaleController</em></p>
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">namespace</span> <span class="nx">App\Http\Controllers</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">Redirect</span><span class="p">;</span>
+<span class="k">use</span> <span class="nx">Session</span><span class="p">;</span>
+
+<span class="k">use</span> <span class="nx">App\Http\Controllers\Controller</span><span class="p">;</span>
+
+<span class="k">class</span> <span class="nc">LocaleController</span> <span class="k">extends</span> <span class="nx">Controller</span>
+<span class="p">{</span>
+    <span class="sd">/**
+     * Switch the locale of the website into English.
+     *
+     * @return Redirect
+     */</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">english</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="nx">Session</span><span class="o">::</span><span class="na">put</span><span class="p">(</span><span class="s1">'locale'</span><span class="p">,</span> <span class="s1">'en'</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">Redirect</span><span class="o">::</span><span class="na">back</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="sd">/**
+     * Switch the locale of the website into Japanese.
+     *
+     * @return Redirect
+     */</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">japanese</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="nx">Session</span><span class="o">::</span><span class="na">put</span><span class="p">(</span><span class="s1">'locale'</span><span class="p">,</span> <span class="s1">'ja'</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">Redirect</span><span class="o">::</span><span class="na">back</span><span class="p">();</span>
+    <span class="p">}</span>
+
+    <span class="sd">/**
+     * Switch the locale of the website into Dutch.
+     *
+     * @return Redirect
+     */</span>
+    <span class="k">public</span> <span class="k">function</span> <span class="nf">dutch</span><span class="p">()</span>
+    <span class="p">{</span>
+        <span class="nx">Session</span><span class="o">::</span><span class="na">put</span><span class="p">(</span><span class="s1">'locale'</span><span class="p">,</span> <span class="s1">'nl'</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">Redirect</span><span class="o">::</span><span class="na">back</span><span class="p">();</span>
+    <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Don’t forget to add the routes to handle the switching.</p>
+
+<p><em>routes.php</em></p>
+<div class="language-php highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nx">Route</span><span class="o">::</span><span class="na">get</span><span class="p">(</span><span class="s1">'en'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'as'</span> <span class="o">=&gt;</span> <span class="s1">'locale.english'</span><span class="p">,</span> <span class="s1">'uses'</span> <span class="o">=&gt;</span> <span class="s1">'LocaleController@english'</span><span class="p">]);</span>
+<span class="nx">Route</span><span class="o">::</span><span class="na">get</span><span class="p">(</span><span class="s1">'ja'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'as'</span> <span class="o">=&gt;</span> <span class="s1">'locale.japanese'</span><span class="p">,</span> <span class="s1">'uses'</span> <span class="o">=&gt;</span> <span class="s1">'LocaleController@japanese'</span><span class="p">]);</span>
+<span class="nx">Route</span><span class="o">::</span><span class="na">get</span><span class="p">(</span><span class="s1">'nl'</span><span class="p">,</span> <span class="p">[</span><span class="s1">'as'</span> <span class="o">=&gt;</span> <span class="s1">'locale.dutch'</span><span class="p">,</span> <span class="s1">'uses'</span> <span class="o">=&gt;</span> <span class="s1">'LocaleController@dutch'</span><span class="p">]);</span>
+</code></pre></div></div>
+
+<p>Some ideas may be to pass the <code class="highlighter-rouge">$websiteLanguages</code> to the function as an arguement and store the acceptable languages in a config variable. You could also have the function scan which locale folders exist in your application.</p>
+
+<p>Now that was easy! This code has been tested on Laravel 5.1</p>
+
+</div>
+
+<div class="container pt-8">
+    <div id="disqus_thread"></div>
+    <script>
+
+    /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = 'https://brysemeijer.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+
+  <div class="container mb-8">&nbsp;</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/latest.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script type="text/javascript" async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML-full&amp;latest"></script>
+  <script src="https://assets.brysemeijer.com/js/highlight.pack.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/js/all.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>

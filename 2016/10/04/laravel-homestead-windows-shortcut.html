@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  <title>Bryse Meijer - Easy One Click Laravel Homestead Shortcut (Windows)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="https://assets.brysemeijer.com/css/styles/monokai_sublime.css">
+  <link rel="stylesheet" href="/assets/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/css/all.min.css">
+</head>
+
+<body>
+  <div class="bg-primary w-full py-1"></div>
+
+<nav class="bg-gray">
+  <div class="container flex items-center justify-between flex-wrap py-6">
+    <div class="flex items-center flex-shrink-0 text-white mr-6">
+      <a href="/">
+        <img src="/assets/logo-small.png" class="fill-current h-8 w-8 mr-2" alt="BJM Logo">
+      </a>
+      <a href="/">
+        <span class="font-semibold text-xl tracking-tight">Bryse Meijer</span>
+      </a>
+    </div>
+    <div class="block lg:hidden">
+      <button class="flex items-center px-3 py-2 border rounded text-teal-200 border-teal-400 hover:text-white hover:border-white">
+        <svg class="fill-current h-3 w-3" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><title>Menu</title><path d="M0 3h20v2H0V3zm0 6h20v2H0V9zm0 6h20v2H0v-2z"/></svg>
+      </button>
+    </div>
+    <div class="w-full block flex-grow lg:flex lg:items-center lg:w-auto">
+      <div class="text-sm lg:flex-grow">
+        <a href="/blog" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-gray-100 mr-4">
+          Blog
+        </a>
+        <a href="/projects" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-gray-100 mr-4">
+          Projects
+        </a>
+        <a href="/contact" class="block mt-4 lg:inline-block lg:mt-0 text-white hover:text-gray-100">
+          Contact
+        </a>
+      </div>
+      <div>
+
+      </div>
+    </div>
+  </div>
+</nav>
+
+  <div class="block w-full bg-cover bg-center flex flex-wrap content-center h-64 border-primary border-t-2 bg-gray" style="background-image: url(https://i2.wp.com/wp.laravel-news.com/wp-content/uploads/2017/02/homestead-5.png)">
+    <h1 class="container text-4xl text-white text-shadow text-center">
+        Easy One Click Laravel Homestead Shortcut (Windows)
+    </h1>
+</div>
+
+<div class="container post-body pt-8">
+    <p>If you are like me and work a lot in Laravel Homestead on your Windows computer, would it not be lovely to be able to fire that virtual environment up with one button? I used to have to open my command prompt, change directory and then write <code class="highlighter-rouge">vagrant up</code>. What makes matters worse is that you have to wait for Vagrant to fire up.</p>
+
+<h2 id="requirements">Requirements</h2>
+<p>We should first download and install the required programs. They will make your life as a developer easier anyways. Skip this step if you have already installed the programs below.</p>
+<ol>
+  <li><a href="https://www.vagrantup.com/">Vagrant</a></li>
+  <li><a href="https://laravel.com/docs/5.3/homestead">Laravel Homestead</a></li>
+  <li><a href="https://git-for-windows.github.io/">Git for Windows</a></li>
+</ol>
+
+<h2 id="lets-get-started">Let’s Get Started</h2>
+
+<h4 id="-step-1-create-a-bash-file"><i class="fa fa-fw fa-file"></i> Step 1. Create a bash file</h4>
+<p>For simplicity, we will call this file <code class="highlighter-rouge">homestead.sh</code>. I have saved it in my user folder at <code class="highlighter-rouge">C:\Users\Bryse\</code>.</p>
+
+<p>Place the following contents into your newly created <code class="highlighter-rouge">homestead.sh</code>.</p>
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> /c/Homestead
+<span class="nb">echo</span> <span class="s2">"Starting Vagrant"</span>
+vagrant up
+vagrant ssh
+<span class="nb">echo</span> <span class="s2">"Suspending Vagrant"</span>
+vagrant <span class="nb">suspend
+</span>ts
+</code></pre></div></div>
+<p>This will change your active directory to whatever path after the first <code class="highlighter-rouge">cd</code> command.
+I have Homestead installed into a folder at the path <code class="highlighter-rouge">C:\Homestead</code>. In the bash command <code class="highlighter-rouge">C:\</code> becomes <code class="highlighter-rouge">/c/</code>.
+It will then run <code class="highlighter-rouge">vagrant up</code> and <code class="highlighter-rouge">vagrant ssh</code> so that you can get started right away.</p>
+
+<p>It is always recommended to suspend Vagrant when finished. If you are done with your virtual enviroment, you can type <code class="highlighter-rouge">exit</code>. This will make you logout from the SSH session and automatically suspend Vagrant for you.</p>
+
+<p><br /></p>
+
+<h4 id="-step-2-create-the-shortcut"><i class="fa fa-fw fa-arrow-circle-right"></i> Step 2. Create the shortcut</h4>
+<p>This is the tricky part. We want our shortcut to open Git Bash and then run the <code class="highlighter-rouge">homestead.sh</code> file that we made.</p>
+
+<p>Go ahead and create a new shortcut anywhere on your computer.
+Set the target to the following: <code class="highlighter-rouge">C:\Windows\System32\cmd.exe /c ""C:\Program Files\Git\bin\sh.exe" --login -i -- "C:\Users\Bryse\homestead.sh""</code></p>
+
+<p>Please note that you will have to change the directory paths if they are different for your system.</p>
+
+<p>I will break down what is going on here.</p>
+<ol>
+  <li><code class="highlighter-rouge">C:\Windows\System32\cmd.exe</code> will tell the shortcut to launch a new command prompt.</li>
+  <li><code class="highlighter-rouge">""C:\Program Files\Git\bin\sh.exe" --login -i"</code> tells the command prompt to run this program.</li>
+  <li><code class="highlighter-rouge">--login -i</code> will log you in the for git bash Linux subsystem. Git bash does this automatically when opening a new prompt.</li>
+  <li><code class="highlighter-rouge">-- "C:\Users\Bryse\homestead.sh"</code> comes last. This will tell the new git bash prompt to run our bash script that we made earlier.</li>
+</ol>
+
+<p><br /></p>
+
+<h4 id="-step-3-give-the-shortcut-an-icon"><i class="fa fa-fw fa-arrow-circle-right"></i> Step 3. Give the shortcut an icon</h4>
+<p>I like to keep my system looking nice, so I found a cool icon to use for my new shortcut.</p>
+
+<p><img src="https://brysemeijer.com/media/cdbb2cc0e7f415f38839c57d65531e09.png" alt="" /></p>
+
+<p>You can use <a href="http://convertico.com/">ConvertIco.com</a> to convert a <code class="highlighter-rouge">.png</code> to a <code class="highlighter-rouge">.ico</code>. Right click your shortcut and go to properties. You can then set your shortcut’s icon to the icon we just converted.</p>
+
+<p>I have pinned my shortcuts to my Task Bar on Windows 10.
+<img src="https://brysemeijer.com/media/f9680b5581562235787148fdb3faec2f.jpg" alt="" /></p>
+
+<p><br /></p>
+
+<h4 id="-step-4-get-coding"><i class="fa fa-fw fa-code"></i> Step 4. Get coding!</h4>
+<p>With our fancy new shortcut, you can easily start Laravel Homestead with a click of a button.</p>
+
+<p><strong>Happy coding!</strong></p>
+
+</div>
+
+<div class="container pt-8">
+    <div id="disqus_thread"></div>
+    <script>
+
+    /**
+    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+    /*
+    var disqus_config = function () {
+    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+    };
+    */
+    (function() { // DON'T EDIT BELOW THIS LINE
+    var d = document, s = d.createElement('script');
+    s.src = 'https://brysemeijer.disqus.com/embed.js';
+    s.setAttribute('data-timestamp', +new Date());
+    (d.head || d.body).appendChild(s);
+    })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+</div>
+
+
+  <div class="container mb-8">&nbsp;</div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/latest.js?config=TeX-AMS_CHTML-full" type="text/javascript"></script>
+  <script type="text/javascript" async="" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-AMS_CHTML-full&amp;latest"></script>
+  <script src="https://assets.brysemeijer.com/js/highlight.pack.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.2/js/all.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>
